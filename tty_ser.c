@@ -10,10 +10,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include <sys/time.h>
 //#define UART_SPEED B9600
-//#define UART_SPEED B115200
-#define UART_SPEED B921600
-#define DEV	"/dev/ttyS3"
+#define UART_SPEED B115200
+//#define UART_SPEED B921600
+#define DEV	"/dev/ttyUSB0"
+//#define DEV	"/dev/ttyS1"
 #define MAX_SIZE 1024
 
 //server PC
@@ -25,6 +27,7 @@ int main(void)
 //	char buf[1024];
 	char rbuf[MAX_SIZE];
 	char destbuf[MAX_SIZE];
+	struct timeval start, end;
 
         fd = open(DEV, O_RDWR|O_NOCTTY|O_NONBLOCK);
         if (fd < 0)
@@ -62,6 +65,7 @@ int main(void)
 		memset(rbuf, 0, MAX_SIZE);
 		memset(destbuf, 0, MAX_SIZE);
 //	printf("Ready for Client Data to Read : \n");
+	gettimeofday(&start, NULL);
 #if 1
 		ret = read(fd, rbuf, sizeof(rbuf));
 //	printf("1.ret:%d: rbuf=%s\n",ret, rbuf);
@@ -72,11 +76,14 @@ int main(void)
 			err = read(fd, rbuf, MAX_SIZE-ret);
 			rbuf[err]='\0';
 			strcat(destbuf+ret, rbuf);
-//			printf("2.err:%d: rbuf=%s\n",err, rbuf);
+			printf("2.err:%d: rbuf=%s\n",err, rbuf);
 			ret += err;
 //		sleep(1);
 		}
 #endif
+        gettimeofday(&end, NULL );
+        int timeuse = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+        printf("time: %d us\n", timeuse);
 		
 	buf[MAX_SIZE]='\0';
 	destbuf[MAX_SIZE]='\0';
@@ -89,12 +96,11 @@ int main(void)
 			success ++;
 		}else{
 			fail ++;
-			printf("tty result: success=%d, fail=%d\n", success, fail);
+			//printf("tty result: success=%d, fail=%d\n", success, fail);
 		}
 			printf("tty result: success=%d, fail=%d\n", success, fail);
                 ret=write(fd, destbuf, err); //server write
 	//printf("Write back Data to Client : \n");
-//	sleep(1);
         }
 
 

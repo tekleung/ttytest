@@ -10,10 +10,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include <sys/time.h>
 //#define UART_SPEED B9600
-//#define UART_SPEED B115200
-#define UART_SPEED B921600
-#define DEV	"/dev/ttyS1"
+#define UART_SPEED B115200
+//#define UART_SPEED B921600
+#define DEV	"/dev/ttyS0"
 #define MAX_SIZE 1024
 
 //client
@@ -25,6 +26,7 @@ int main(void)
 //	char buf[1024];
 	char rbuf[MAX_SIZE];
 	char destbuf[MAX_SIZE];
+	struct timeval start, end;
 
         fd = open(DEV, O_RDWR|O_NOCTTY|O_NONBLOCK);
         if (fd < 0)
@@ -65,6 +67,7 @@ int main(void)
 	//printf("Ready for Server data to Read: \n");
 //	printf("0.ret:%d, %s\n",ret, buf);
 #if 1
+	gettimeofday(&start, NULL );
 		ret = read(fd, rbuf, sizeof(rbuf));
 //	printf("1.ret:%d: rbuf=%s\n",ret, rbuf);
 		memcpy(destbuf, rbuf, ret);
@@ -74,10 +77,13 @@ int main(void)
 			err = read(fd, rbuf, MAX_SIZE-ret);
 			rbuf[err]='\0';
 			strcat(destbuf+ret, rbuf);
-//			printf("2.err:%d: rbuf=%s\n",err, rbuf);
+			printf("2.err:%d: rbuf=%s\n",err, rbuf);
 			ret += err;
 //		sleep(1);
 		}
+	gettimeofday(&end, NULL );
+	int timeuse = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+	printf("time: %d us\n", timeuse);
 //#endif
 		
 	buf[MAX_SIZE]='\0';
@@ -90,7 +96,7 @@ int main(void)
 			success ++;
 		}else{
 			fail ++;
-			printf("tty result: success=%d, fail=%d\n", success, fail);
+//			printf("tty result: success=%d, fail=%d\n", success, fail);
 		}
 			printf("tty result: success=%d, fail=%d\n", success, fail);
 #endif
